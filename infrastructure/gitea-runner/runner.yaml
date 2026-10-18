@@ -1,0 +1,69 @@
+# Gitea Actions runner for the `assistant` org, with its own rootless Docker daemon for builds.
+# The registration lives on the volume, so restarts don't register a new runner each time.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: runner-data
+spec:
+  accessModes: [ReadWriteOnce]
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 20Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: act-runner
+  labels:
+    app: act-runner
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: act-runner
+  template:
+    metadata:
+      labels:
+        app: act-runner
+    spec:
+      securityContext:
+        fsGroup: 1000
+      containers:
+        - name: runner
+          image: gitea/act_runner:0.6.1-dind-rootless
+          env:
+            - name: CONFIG_FILE
+              value: /config/config.yaml
+            - name: GITEA_INSTANCE_URL
+              value: https://registry.syeyoung.dev
+            - name: GITEA_RUNNER_NAME
+              value: syeyoung-kube
+            - name: GITEA_RUNNER_REGISTRATION_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: runner-token
+                  key: token
+          securityContext:
+            # Rootless Docker still needs a privileged pod for its user namespaces and overlay mounts.
+            privileged: true
+          resources:
+            requests:
+              cpu: 200m
+              memory: 512Mi
+            limits:
+              memory: 6Gi
+          volumeMounts:
+            - name: data
+              mountPath: /data
+            - name: config
+              mountPath: /config
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: runner-data
+        - name: config
+          configMap:
+            name: runner-config

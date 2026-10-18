@@ -1,0 +1,16 @@
+# act_runner settings. Jobs run in containers on the runner's own rootless Docker.
+log:
+  level: info
+runner:
+  file: /data/.runner
+  capacity: 2
+  timeout: 1h
+  labels:
+    - "ubuntu-latest:docker://gitea/runner-images:ubuntu-latest"
+cache:
+  enabled: true
+  dir: /data/cache
+container:
+  # Mount the runner's Docker socket into job containers so jobs can build images.
+  docker_host: ""
+  valid_volumes: []

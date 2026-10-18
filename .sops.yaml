@@ -1,0 +1,5 @@
+# Secrets are committed encrypted. Flux decrypts them with the age key in flux-system/sops-age.
+creation_rules:
+  - path_regex: .*\.sops\.yaml$
+    encrypted_regex: ^(data|stringData)$
+    age: age1a7kq5d0ellj6cd245cjzy6mcvhcv7z9fye3v8fzgjd5p37acyacskuc08s

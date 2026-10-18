@@ -1,0 +1,25 @@
+# The shared Postgres runs on the node itself, not in the cluster. This gives it a stable
+# in-cluster name, `postgres`, so the app never hard-codes the node's address.
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+spec:
+  ports:
+    - name: postgres
+      port: 5432
+      targetPort: 5432
+---
+apiVersion: discovery.k8s.io/v1
+kind: EndpointSlice
+metadata:
+  name: postgres-host
+  labels:
+    kubernetes.io/service-name: postgres
+addressType: IPv4
+ports:
+  - name: postgres
+    port: 5432
+endpoints:
+  - addresses:
+      - 192.168.219.104

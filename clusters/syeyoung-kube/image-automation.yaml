@@ -1,0 +1,26 @@
+# Commits new image tags (chosen by the ImagePolicies under apps/) back to this repo.
+apiVersion: image.toolkit.fluxcd.io/v1
+kind: ImageUpdateAutomation
+metadata:
+  name: apps
+  namespace: flux-system
+spec:
+  interval: 5m
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  git:
+    checkout:
+      ref:
+        branch: main
+    commit:
+      author:
+        name: flux
+        email: flux@noreply.localhost
+      messageTemplate: |
+        Deploy {{ range .Changed.Changes }}{{ .NewValue }} {{ end }}
+    push:
+      branch: main
+  update:
+    path: ./apps
+    strategy: Setters
