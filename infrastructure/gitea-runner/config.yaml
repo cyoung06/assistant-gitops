@@ -13,4 +13,8 @@ cache:
 container:
   # Mount the runner's Docker socket into job containers so jobs can build images.
   docker_host: ""
-  valid_volumes: []
+  # A named volume for actions' tool downloads (setup-java's JDK, setup-node's Node), so each
+  # version is downloaded once instead of on every run.
+  options: "-v hostedtoolcache:/opt/hostedtoolcache"
+  valid_volumes:
+    - hostedtoolcache

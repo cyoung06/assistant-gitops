@@ -1,5 +1,6 @@
 # Gitea Actions runner for the `assistant` org, with its own Docker daemon (dind) for builds.
-# The registration lives on the volume, so restarts don't register a new runner each time.
+# The volume keeps the registration (so restarts don't register a new runner), the actions cache,
+# and the inner Docker's storage (so job images and the tool cache survive restarts).
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -57,6 +58,9 @@ spec:
           volumeMounts:
             - name: data
               mountPath: /data
+            - name: data
+              mountPath: /var/lib/docker
+              subPath: docker
             - name: config
               mountPath: /config
       volumes:
