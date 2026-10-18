@@ -29,7 +29,7 @@ sops apps/assistant/api-secrets.sops.yaml     # view or edit in place
 
 | File | Contents |
 |---|---|
-| `apps/assistant/api-secrets.sops.yaml` | `DB_PASSWORD`, `LLM_API_KEY` |
+| `apps/assistant/api-secrets.sops.yaml` | `DB_PASSWORD`, `LLM_API_KEY`, `PLMS_USERNAME`, `PLMS_PASSWORD` |
 
 Non-secret settings are in the `configMapGenerator` in `apps/assistant/kustomization.yaml`.
 

@@ -17,6 +17,7 @@ configMapGenerator:
       - DB_JDBC_URL=jdbc:postgresql://postgres:5432/assistant
       - DB_USERNAME=assistant
       - LLM_MODEL=gpt-6-luna
+      - PLMS_ENABLED=true
   - name: assistant-web
     literals:
       - API_UPSTREAM=http://assistant-api:8080
