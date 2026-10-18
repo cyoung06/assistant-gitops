@@ -63,6 +63,9 @@ spec:
               subPath: docker
             - name: config
               mountPath: /config
+            - name: config
+              mountPath: /etc/docker/daemon.json
+              subPath: daemon.json
       volumes:
         - name: data
           persistentVolumeClaim:

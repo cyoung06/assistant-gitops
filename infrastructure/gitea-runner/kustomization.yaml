@@ -9,3 +9,6 @@ configMapGenerator:
   - name: runner-config
     files:
       - config.yaml
+      # Inner Docker's MTU must match the pod network (flannel VXLAN: 1450). With the default 1500,
+      # large packets are dropped: TLS handshakes stall and downloads crawl.
+      - daemon.json
