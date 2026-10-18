@@ -16,10 +16,7 @@ configMapGenerator:
       - DB_R2DBC_URL=r2dbc:postgresql://postgres:5432/assistant
       - DB_JDBC_URL=jdbc:postgresql://postgres:5432/assistant
       - DB_USERNAME=assistant
-      - AUTH_ENABLED=true
-      - AUTH_GOOGLE_CLIENT_IDS=
       - LLM_MODEL=gpt-6-luna
   - name: assistant-web
     literals:
       - API_UPSTREAM=http://assistant-api:8080
-      - GOOGLE_CLIENT_ID=
