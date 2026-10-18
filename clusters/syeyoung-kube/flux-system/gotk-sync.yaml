@@ -11,7 +11,7 @@ spec:
     branch: main
   secretRef:
     name: flux-system
-  url: https://registry.syeyoung.dev/assistant/deploy.git
+  url: ssh://git@github.com/cyoung06/assistant-gitops
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
