@@ -20,6 +20,10 @@ configMapGenerator:
       - DB_USERNAME=assistant
       - LLM_MODEL=gpt-6-luna
       - PLMS_ENABLED=true
+      - DAV_URL=http://radicale:5232
+      - DAV_USERNAME=syeyoung
+      # Paused while moving to CalDAV; re-enabled after the migration.
+      - SOURCES_SCHEDULER_ENABLED=false
   - name: assistant-web
     literals:
       - API_UPSTREAM=http://assistant-api:8080
