@@ -20,7 +20,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: web
-          image: ghcr.io/cyoung06/assistant-web:0-bootstrap # {"$imagepolicy": "assistant:assistant-web"}
+          image: ghcr.io/cyoung06/assistant-web:1-b095fde # {"$imagepolicy": "assistant:assistant-web"}
           ports:
             - name: http
               containerPort: 8080
