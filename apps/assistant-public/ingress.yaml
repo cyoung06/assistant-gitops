@@ -1,0 +1,30 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: assistant-public
+  namespace: assistant
+  annotations:
+    kubernetes.io/ingress.class: istio
+spec:
+  ingressClassName: istio
+  tls:
+    - hosts: [assistant.syeyoung.dev]
+      secretName: assistant-syeyoung-dev-cert
+  rules:
+    - host: assistant.syeyoung.dev
+      http:
+        paths:
+          - path: /outlook/
+            pathType: Prefix
+            backend:
+              service:
+                name: assistant-web
+                port:
+                  number: 80
+          - path: /api/v1/public/
+            pathType: Prefix
+            backend:
+              service:
+                name: assistant-web
+                port:
+                  number: 80
