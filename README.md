@@ -5,8 +5,8 @@ GitOps repo for the personal assistant app on `syeyoung-kube`, applied by Flux.
 ```
 clusters/syeyoung-kube/   Flux entry point (flux-system/ is written by `flux bootstrap`)
   apps.yaml               → apps/
-  image-automation.yaml   commits new image tags from CI back to apps/
 apps/assistant/           API, web, Tailscale ingress, link to the host Postgres, image policies
+                          and the automation that commits new image tags back here
 ```
 
 Code: [assistant-api](https://github.com/cyoung06/assistant-api), [assistant-web](https://github.com/cyoung06/assistant-web).

@@ -1,14 +1,15 @@
-# Commits new image tags (chosen by the ImagePolicies under apps/) back to this repo.
+# Commits new image tags (chosen by the ImagePolicies in this namespace) back to this repo.
+# It must live in the same namespace as the ImagePolicies it applies.
 apiVersion: image.toolkit.fluxcd.io/v1
 kind: ImageUpdateAutomation
 metadata:
-  name: apps
-  namespace: flux-system
+  name: assistant
 spec:
   interval: 5m
   sourceRef:
     kind: GitRepository
     name: flux-system
+    namespace: flux-system
   git:
     checkout:
       ref:
@@ -22,5 +23,5 @@ spec:
     push:
       branch: main
   update:
-    path: ./apps
+    path: ./apps/assistant
     strategy: Setters

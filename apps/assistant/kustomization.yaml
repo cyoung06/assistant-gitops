@@ -9,6 +9,7 @@ resources:
   - web.yaml
   - ingress.yaml
   - images.yaml
+  - image-automation.yaml
 configMapGenerator:
   - name: assistant-api
     literals:
