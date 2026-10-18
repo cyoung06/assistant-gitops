@@ -1,0 +1,22 @@
+apiVersion: v1
+data:
+    users: ENC[AES256_GCM,data:ZEgl782HQ2OJouy4+4BtFGJrh/Cb5KAfC6JVy8CEmisK8K/Gr3Aw+W7nYexxL+hIohCMbfITu/Js7j5HU3e0PCkIvG2MLn5a6dHGea1qLyTQcmjZGPKOhFQwCOT3eUL6P1AMmHBUu5iHcL9nfSc0Oa30mn19/nRuOZX+wa6Sj7LXhwYN0w+xmZpzUGauCi5wmjisnOGPepoZZbwt,iv:bfeyJ1CL1BhiwqWOTdL8UmoFPmWoixEs9iWlehtbwl8=,tag:670cVCLqF1XQjKAM6R8cnA==,type:str]
+kind: Secret
+metadata:
+    name: radicale-users
+    namespace: assistant
+sops:
+    age:
+        - enc: |
+            -----BEGIN AGE ENCRYPTED FILE-----
+            YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBBS05SWWZvbXU5MXkyQStX
+            WW5vZ3Q4QWRuNEJ3N3NmR2ZveXpQTzBRemd3Cm5QQ3VUeUQyYzZjL3FQYlFaVzNU
+            QnpGMzNiWGVIN3JKeHpnbEgyZ2sxRGcKLS0tIElGWFMzV0FqdUp5ODFkVEpvVXZt
+            N3czcHlYRGZFQzNsb1R2TEpsTkd3Y3cKuMnyjfICBmC3aLb643FRh1yAVZzew5MB
+            biGe8XNLO1iQorgJK2Zlb7x6R6kmP94d5i6hqXXTUHp1uTTFsY8vww==
+            -----END AGE ENCRYPTED FILE-----
+          recipient: age1a7kq5d0ellj6cd245cjzy6mcvhcv7z9fye3v8fzgjd5p37acyacskuc08s
+    encrypted_regex: ^(data|stringData)$
+    lastmodified: "2026-10-18T14:06:23Z"
+    mac: ENC[AES256_GCM,data:HadI1FcpWGQ2qQi17wHmjtOqnX3TPN3UPojJFDadiV0rhpnO2gUc2paf1wss3/oa9DJEdtrPD0pHgasdilf8JxFnUBMYK8gqGmEwRkaawr+LFaffmKG+dQvhWJb58OAvom4V7MjJh1xbvr0A6sj4CBj5Hucay4l3VhucVvLoXXg=,iv:0Df9FtLNGdYsHtBu+k/hn7uUDTmvhmVOZH6eM7Vt1nY=,tag:o0FHqCV+Tv9H2VTs6vT7pQ==,type:str]
+    version: 3.13.3

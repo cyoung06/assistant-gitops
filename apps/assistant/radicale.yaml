@@ -1,0 +1,110 @@
+# Radicale: the CalDAV/CardDAV server holding events and todos. Clients (Mac Calendar/Reminders,
+# DAVx5 on Android) connect at https://dav.lonk-kelvin.ts.net with the user in radicale-users.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: radicale-data
+spec:
+  accessModes: [ReadWriteOnce]
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 2Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: radicale
+  labels:
+    app: radicale
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: radicale
+  template:
+    metadata:
+      labels:
+        app: radicale
+    spec:
+      securityContext:
+        fsGroup: 2999
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: radicale
+          image: tomsquest/docker-radicale:3.8.3.0
+          ports:
+            - name: http
+              containerPort: 5232
+          env:
+            - name: RADICALE_CONFIG_SERVER_HOSTS
+              value: 0.0.0.0:5232
+            - name: RADICALE_CONFIG_AUTH_TYPE
+              value: htpasswd
+            - name: RADICALE_CONFIG_AUTH_HTPASSWD_FILENAME
+              value: /secrets/users
+            - name: RADICALE_CONFIG_AUTH_HTPASSWD_ENCRYPTION
+              value: autodetect
+            - name: RADICALE_CONFIG_RIGHTS_TYPE
+              value: owner_only
+            - name: RADICALE_CONFIG_STORAGE_FILESYSTEM_FOLDER
+              value: /data/collections
+          readinessProbe:
+            tcpSocket:
+              port: http
+          resources:
+            requests:
+              cpu: 10m
+              memory: 64Mi
+            limits:
+              memory: 256Mi
+          securityContext:
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: [ALL]
+              add: [SETUID, SETGID, CHOWN]
+          volumeMounts:
+            - name: data
+              mountPath: /data
+            - name: users
+              mountPath: /secrets
+              readOnly: true
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: radicale-data
+        - name: users
+          secret:
+            secretName: radicale-users
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: radicale
+spec:
+  selector:
+    app: radicale
+  ports:
+    - name: http
+      port: 5232
+      targetPort: http
+---
+# Private: https://dav.lonk-kelvin.ts.net, tailnet only.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: dav
+spec:
+  ingressClassName: tailscale
+  defaultBackend:
+    service:
+      name: radicale
+      port:
+        name: http
+  tls:
+    - hosts:
+        - dav

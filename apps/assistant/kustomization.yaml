@@ -4,6 +4,8 @@ namespace: assistant
 resources:
   - namespace.yaml
   - api-secrets.sops.yaml
+  - radicale-users.sops.yaml
+  - radicale.yaml
   - postgres.yaml
   - api.yaml
   - web.yaml
