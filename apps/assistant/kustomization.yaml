@@ -18,10 +18,11 @@ configMapGenerator:
       - DB_R2DBC_URL=r2dbc:postgresql://postgres:5432/assistant
       - DB_JDBC_URL=jdbc:postgresql://postgres:5432/assistant
       - DB_USERNAME=assistant
-      - LLM_MODEL=gpt-6-luna
       - PLMS_ENABLED=true
       - DAV_URL=http://radicale:5232
       - DAV_USERNAME=syeyoung
+      # Microsoft Entra app registration (public client) for Outlook mail; empty = mail source off.
+      - MAIL_CLIENT_ID=
   - name: assistant-web
     literals:
       - API_UPSTREAM=http://assistant-api:8080
