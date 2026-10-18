@@ -20,7 +20,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: api
-          image: ghcr.io/cyoung06/assistant-api:8-6ce854d # {"$imagepolicy": "assistant:assistant-api"}
+          image: ghcr.io/cyoung06/assistant-api:9-57d02da # {"$imagepolicy": "assistant:assistant-api"}
           ports:
             - name: http
               containerPort: 8080
