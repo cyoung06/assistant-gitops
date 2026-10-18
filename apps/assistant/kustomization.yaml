@@ -21,6 +21,7 @@ configMapGenerator:
       - PLMS_ENABLED=true
       - DAV_URL=http://radicale:5232
       - DAV_USERNAME=syeyoung
+      - PUBLIC_URL=https://assistant.lonk-kelvin.ts.net
       # Microsoft Entra app registration (public client) for Outlook mail; empty = mail source off.
       - MAIL_CLIENT_ID=
   - name: assistant-web
