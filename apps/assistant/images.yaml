@@ -4,10 +4,8 @@ kind: ImageRepository
 metadata:
   name: assistant-api
 spec:
-  image: registry.syeyoung.dev/assistant/assistant-api
+  image: ghcr.io/cyoung06/assistant-api
   interval: 2m
-  secretRef:
-    name: regcred
 ---
 apiVersion: image.toolkit.fluxcd.io/v1
 kind: ImagePolicy
@@ -28,10 +26,8 @@ kind: ImageRepository
 metadata:
   name: assistant-web
 spec:
-  image: registry.syeyoung.dev/assistant/assistant-web
+  image: ghcr.io/cyoung06/assistant-web
   interval: 2m
-  secretRef:
-    name: regcred
 ---
 apiVersion: image.toolkit.fluxcd.io/v1
 kind: ImagePolicy

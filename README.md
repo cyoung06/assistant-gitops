@@ -1,26 +1,27 @@
-# deploy
+# assistant-gitops
 
-GitOps repo for the `assistant` app on `syeyoung-kube`, applied by Flux.
+GitOps repo for the personal assistant app on `syeyoung-kube`, applied by Flux.
 
 ```
 clusters/syeyoung-kube/   Flux entry point (flux-system/ is written by `flux bootstrap`)
-  infrastructure.yaml     → infrastructure/   Gitea Actions runner for the assistant org
-  apps.yaml               → apps/             the app (depends on infrastructure)
+  apps.yaml               → apps/
   image-automation.yaml   commits new image tags from CI back to apps/
 apps/assistant/           API, web, Tailscale ingress, link to the host Postgres, image policies
 ```
 
-Flow: push to `main` in `assistant/api` or `assistant/web` → Gitea Actions tests and pushes
-`registry.syeyoung.dev/assistant/<image>:<run>-<sha>` → Flux sees the higher run number, commits the
-new tag here, and rolls the Deployment.
+Code: [assistant-api](https://github.com/cyoung06/assistant-api), [assistant-web](https://github.com/cyoung06/assistant-web).
 
-The app: https://assistant.lonk-kelvin.ts.net (tailnet only).
+Flow: push to `main` in either code repo → GitHub Actions tests and pushes
+`ghcr.io/cyoung06/<image>:<run>-<sha>` → Flux sees the higher run number, commits the new tag
+here, and rolls the Deployment.
+
+The app: https://assistant.lonk-kelvin.ts.net (tailnet only; there is no login).
 
 ## Secrets
 
 `*.sops.yaml` files are encrypted with age (recipient in `.sops.yaml`). Flux decrypts them with the
-`sops-age` secret in `flux-system`. The private key lives in
-`~/Library/Application Support/sops/age/keys.txt`; keep a copy in Vaultwarden.
+`sops-age` secret in `flux-system`. Keep a copy of the private key somewhere safe; without it the
+secrets can't be read or changed.
 
 ```sh
 sops apps/assistant/api-secrets.sops.yaml     # view or edit in place
@@ -29,24 +30,23 @@ sops apps/assistant/api-secrets.sops.yaml     # view or edit in place
 | File | Contents |
 |---|---|
 | `apps/assistant/api-secrets.sops.yaml` | `DB_PASSWORD`, `LLM_API_KEY` |
-| `apps/assistant/regcred.sops.yaml` | Registry pull token (`assistant-serviceaccount`, `read:package`) |
-| `infrastructure/gitea-runner/runner-token.sops.yaml` | Runner registration token for the `assistant` org |
 
 Non-secret settings are in the `configMapGenerator` in `apps/assistant/kustomization.yaml`.
 
 ## Bootstrap (once)
 
 ```sh
-export GITEA_TOKEN=$(cat ../secrets/flux-token)   # assistant-serviceaccount, write:repository
-flux bootstrap gitea \
-  --hostname=registry.syeyoung.dev --owner=assistant --repository=deploy \
-  --branch=main --path=clusters/syeyoung-kube --token-auth --private=true \
+export GITHUB_TOKEN=$(gh auth token)
+flux bootstrap github \
+  --owner=cyoung06 --personal --repository=assistant-gitops \
+  --branch=main --path=clusters/syeyoung-kube --private=false --read-write-key \
   --components-extra=image-reflector-controller,image-automation-controller
-unset GITEA_TOKEN
+unset GITHUB_TOKEN
 
-kubectl -n flux-system create secret generic sops-age \
-  --from-file=age.agekey="$HOME/Library/Application Support/sops/age/keys.txt"
+kubectl -n flux-system create secret generic sops-age --from-file=age.agekey=<path to the age key>
 ```
+
+`--read-write-key` lets image automation push tag updates through the deploy key.
 
 ## Useful commands
 
@@ -59,6 +59,12 @@ kubectl -n assistant logs deploy/assistant-api
 
 ## Database
 
-Postgres runs on the node (192.168.219.104:5432), outside Kubernetes; `apps/assistant/postgres.yaml`
-gives it the in-cluster name `postgres`. Database and role: `assistant`. `pg_hba.conf` allows the pod
-network 10.42.0.0/16. The API runs its Flyway migrations on startup.
+Postgres runs on the node itself, outside Kubernetes; `apps/assistant/postgres.yaml` gives it the
+in-cluster name `postgres`. Database and role: `assistant`. `pg_hba.conf` allows the pod network
+10.42.0.0/16. The API runs its Flyway migrations on startup.
+
+## Node capacity
+
+The node has 2 CPUs and most of it is already reserved by other apps, so
+`clusters/syeyoung-kube/flux-system/kustomization.yaml` lowers Flux's CPU requests and the app's
+requests are kept small. Check `kubectl describe node` before adding workloads.

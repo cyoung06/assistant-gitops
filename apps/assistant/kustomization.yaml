@@ -3,7 +3,6 @@ kind: Kustomization
 namespace: assistant
 resources:
   - namespace.yaml
-  - regcred.sops.yaml
   - api-secrets.sops.yaml
   - postgres.yaml
   - api.yaml

@@ -14,15 +14,13 @@ spec:
       labels:
         app: assistant-web
     spec:
-      imagePullSecrets:
-        - name: regcred
       securityContext:
         runAsNonRoot: true
         seccompProfile:
           type: RuntimeDefault
       containers:
         - name: web
-          image: registry.syeyoung.dev/assistant/assistant-web:0-bootstrap # {"$imagepolicy": "assistant:assistant-web"}
+          image: ghcr.io/cyoung06/assistant-web:0-bootstrap # {"$imagepolicy": "assistant:assistant-web"}
           ports:
             - name: http
               containerPort: 8080
