@@ -1,4 +1,4 @@
-# act_runner settings. Jobs run in containers on the runner's own rootless Docker.
+# act_runner settings. Jobs run in containers on the runner's own Docker daemon.
 log:
   level: info
 runner:

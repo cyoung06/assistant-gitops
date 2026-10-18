@@ -1,4 +1,4 @@
-# Gitea Actions runner for the `assistant` org, with its own rootless Docker daemon for builds.
+# Gitea Actions runner for the `assistant` org, with its own Docker daemon (dind) for builds.
 # The registration lives on the volume, so restarts don't register a new runner each time.
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -29,11 +29,9 @@ spec:
       labels:
         app: act-runner
     spec:
-      securityContext:
-        fsGroup: 1000
       containers:
         - name: runner
-          image: gitea/act_runner:0.6.1-dind-rootless
+          image: gitea/act_runner:0.6.1-dind
           env:
             - name: CONFIG_FILE
               value: /config/config.yaml
@@ -47,7 +45,8 @@ spec:
                   name: runner-token
                   key: token
           securityContext:
-            # Rootless Docker still needs a privileged pod for its user namespaces and overlay mounts.
+            # Docker-in-Docker needs a privileged pod. (The rootless variant can't start on this node:
+            # Ubuntu 24.04's AppArmor blocks the unprivileged user namespaces it relies on.)
             privileged: true
           resources:
             requests:
