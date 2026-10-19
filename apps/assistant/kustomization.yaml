@@ -25,7 +25,8 @@ configMapGenerator:
       # Through this host only /api/v1/public is answered (see apps/assistant-public).
       - PUBLIC_HOST=assistant.syeyoung.dev
       # Microsoft Entra app registration (public client) for Outlook mail; empty = mail source off.
-      - MAIL_CLIENT_ID=
+      - MAIL_CLIENT_ID=ad15ba37-2ae3-4e75-8137-17070a00646d
+      - MAIL_TENANT=postech.ac.kr
   - name: assistant-web
     literals:
       - API_UPSTREAM=http://assistant-api:8080
