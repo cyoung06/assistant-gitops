@@ -20,7 +20,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: web
-          image: ghcr.io/cyoung06/assistant-web:43-59800ff@sha256:f13e17a67de29abc4a920a26e15e139e72be776013a166a3cfba55039af3d5fb # set by deploy.sh
+          image: ghcr.io/cyoung06/assistant-web:44-618fade@sha256:a16ed561b2957ed1d700af1c9d6a8ae94a4338326c505d0f00f5144b589a9c05 # set by deploy.sh
           ports:
             - name: http
               containerPort: 8080
