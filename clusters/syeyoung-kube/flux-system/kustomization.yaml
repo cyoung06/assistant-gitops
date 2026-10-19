@@ -3,7 +3,21 @@ kind: Kustomization
 resources:
 - gotk-components.yaml
 - gotk-sync.yaml
+- pgp-public-keys.yaml
 patches:
+  # Only commits signed by the key in pgp-public-keys are applied: control of GitHub alone can't
+  # change the cluster. Nothing in the cluster pushes here (deploys are signed commits from deploy.sh).
+  - patch: |
+      apiVersion: source.toolkit.fluxcd.io/v1
+      kind: GitRepository
+      metadata:
+        name: flux-system
+        namespace: flux-system
+      spec:
+        verify:
+          mode: HEAD
+          secretRef:
+            name: pgp-public-keys
   # The node has 2 CPUs and other apps already reserve almost all of it. Flux's controllers
   # idle far below their default 100m request, so reserve less.
   - patch: |
