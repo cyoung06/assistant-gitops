@@ -28,6 +28,8 @@ configMapGenerator:
       # consent to their own app registrations. Empty = mail source off.
       - MAIL_CLIENT_ID=9e5f94bc-e8a4-4e73-b8be-63364c29d753
       - MAIL_TENANT=postech.ac.kr
+      # GitHub App for references to repos, issues and PRs (its private key is in api-secrets).
+      - GITHUB_APP_ID=5378549
   - name: assistant-web
     literals:
       - API_UPSTREAM=http://assistant-api:8080
