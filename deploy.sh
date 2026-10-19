@@ -1,5 +1,6 @@
 #!/bin/sh
-# Deploys the newest CI image of an app's main branch: ./deploy.sh api|web
+# Deploys the newest CI image of an app's main branch: ./deploy.sh api|web [commit]
+# (or that of an earlier commit on it, e.g. when CI for the newest hasn't run yet).
 #
 # Flux applies only commits signed by syeyoung's key (see clusters/syeyoung-kube/flux-system), so a
 # deploy is a signed commit here that pins the image by digest. Before signing, this checks that
@@ -13,7 +14,7 @@ KEY=85CEA8FCC07F297F79DE8169296393DBF79539FC
 BASE=e03a65eab33b0e27e42847f9893fca30b34b3668
 
 app=${1:-}
-case "$app" in api | web) ;; *) echo "usage: $0 api|web" >&2; exit 2 ;; esac
+case "$app" in api | web) ;; *) echo "usage: $0 api|web [commit]" >&2; exit 2 ;; esac
 src=../$app
 repo=cyoung06/assistant-$app
 image=ghcr.io/$repo
@@ -29,7 +30,8 @@ signed . "$BASE..origin/main" || { echo "Commits in assistant-gitops not signed 
 git merge -q --ff-only origin/main
 
 git -C "$src" fetch -q origin main
-head=$(git -C "$src" rev-parse origin/main)
+head=$(git -C "$src" rev-parse "${2:-origin/main}^{commit}")
+git -C "$src" merge-base --is-ancestor "$head" origin/main || { echo "$head isn't on $repo's main." >&2; exit 1; }
 deployed=$(sed -n "s|.*image: $image:[0-9]*-\([0-9a-f]*\)@.*|\1|p" "apps/assistant/$app.yaml")
 range=$head
 if [ -n "$deployed" ] && git -C "$src" merge-base --is-ancestor "$deployed" "$head" 2>/dev/null; then range="$deployed..$head"; else range="-1 $head"; fi
