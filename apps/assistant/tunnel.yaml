@@ -1,0 +1,44 @@
+# OpenAI's Secure MCP Tunnel: an outgoing connection to OpenAI that carries ChatGPT's MCP requests to
+# the API's /mcp endpoint, which is reachable only inside the cluster. Nothing here is exposed.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tunnel-client
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: tunnel-client }
+  template:
+    metadata:
+      labels: { app: tunnel-client }
+    spec:
+      containers:
+        - name: tunnel-client
+          # v0.0.15, pinned by digest.
+          image: ghcr.io/openai/tunnel-client:v0.0.15@sha256:119799b778ba8411a124f53588f9dc837fd62ba03e5fadf77d675123c92ab58e
+          env:
+            - name: CONTROL_PLANE_TUNNEL_ID
+              value: tunnel_6ad5de46f9d48191a8218509758493c3
+            - name: MCP_SERVER_URL
+              value: http://assistant-api.assistant.svc.cluster.local:8080/mcp
+            - name: HEALTH_LISTEN_ADDR
+              value: ":8080"
+            - name: CONTROL_PLANE_API_KEY
+              valueFrom:
+                secretKeyRef: { name: tunnel-secrets, key: CONTROL_PLANE_API_KEY }
+          ports:
+            - name: health
+              containerPort: 8080
+          livenessProbe:
+            httpGet: { path: /healthz, port: health }
+            initialDelaySeconds: 5
+          readinessProbe:
+            httpGet: { path: /readyz, port: health }
+            initialDelaySeconds: 5
+          resources:
+            requests: { cpu: 10m, memory: 32Mi }
+            limits: { memory: 128Mi }
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities: { drop: [ALL] }
+            seccompProfile: { type: RuntimeDefault }

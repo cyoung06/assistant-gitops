@@ -4,11 +4,13 @@ namespace: assistant
 resources:
   - namespace.yaml
   - api-secrets.sops.yaml
+  - tunnel-secrets.sops.yaml
   - radicale-users.sops.yaml
   - radicale.yaml
   - postgres.yaml
   - api.yaml
   - web.yaml
+  - tunnel.yaml
   - ingress.yaml
   - images.yaml
   - image-automation.yaml
