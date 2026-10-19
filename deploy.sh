@@ -10,7 +10,7 @@ cd "$(dirname "$0")"
 
 KEY=85CEA8FCC07F297F79DE8169296393DBF79539FC
 # The first commit Flux verified; everything after it must be signed too.
-BASE=__BASE__
+BASE=e03a65eab33b0e27e42847f9893fca30b34b3668
 
 app=${1:-}
 case "$app" in api | web) ;; *) echo "usage: $0 api|web" >&2; exit 2 ;; esac
