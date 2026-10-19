@@ -1,0 +1,192 @@
+# The drive: files (project folders, course files from PLMS, notebooks) served over WebDAV by
+# Apache httpd (mod_dav). It has locking (DavLockDB), which macOS Finder needs to mount it
+# writable. Clients connect at https://files.lonk-kelvin.ts.net with the user in drive-users;
+# the API reaches it in the cluster as http://drive:8080.
+# On the node's 8 TB disk (/mnt/hdd), not the system disk.
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: assistant-drive
+spec:
+  capacity:
+    storage: 1Ti
+  accessModes: [ReadWriteOnce]
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: manual
+  hostPath:
+    path: /mnt/hdd/assistant-drive
+    type: DirectoryOrCreate
+  claimRef:
+    namespace: assistant
+    name: drive-data
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: drive-data
+spec:
+  accessModes: [ReadWriteOnce]
+  storageClassName: manual
+  volumeName: assistant-drive
+  resources:
+    requests:
+      storage: 1Ti
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: drive-httpd
+data:
+  httpd.conf: |
+    ServerRoot "/usr/local/apache2"
+    Listen 8080
+    PidFile /tmp/httpd.pid
+    LoadModule mpm_event_module modules/mod_mpm_event.so
+    LoadModule authn_file_module modules/mod_authn_file.so
+    LoadModule authn_core_module modules/mod_authn_core.so
+    LoadModule authz_user_module modules/mod_authz_user.so
+    LoadModule authz_core_module modules/mod_authz_core.so
+    LoadModule auth_basic_module modules/mod_auth_basic.so
+    LoadModule dav_module modules/mod_dav.so
+    LoadModule dav_fs_module modules/mod_dav_fs.so
+    LoadModule dav_lock_module modules/mod_dav_lock.so
+    LoadModule setenvif_module modules/mod_setenvif.so
+    LoadModule mime_module modules/mod_mime.so
+    LoadModule log_config_module modules/mod_log_config.so
+    LoadModule unixd_module modules/mod_unixd.so
+    LoadModule dir_module modules/mod_dir.so
+    TypesConfig conf/mime.types
+    ErrorLog /proc/self/fd/2
+    LogFormat "%h %u \"%r\" %>s %b" short
+    CustomLog /proc/self/fd/1 short
+    # Big uploads (lecture videos, scans) are fine.
+    LimitRequestBody 0
+    DavLockDB /data/locks/DavLock
+    # Clients that mishandle redirects on folders without a trailing slash (old Finder, Windows).
+    BrowserMatch "Microsoft Data Access Internet Publishing Provider" redirect-carefully
+    BrowserMatch "^WebDAVFS/1.[01234]" redirect-carefully
+    BrowserMatch "^gnome-vfs/1.0" redirect-carefully
+    DocumentRoot /data/files
+    <Directory /data/files>
+      Dav On
+      Options Indexes
+      AllowOverride None
+      AuthType Basic
+      AuthName "Assistant drive"
+      AuthUserFile /secrets/users
+      Require valid-user
+    </Directory>
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: drive
+  labels:
+    app: drive
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: drive
+  template:
+    metadata:
+      labels:
+        app: drive
+    spec:
+      securityContext:
+        runAsUser: 33
+        runAsGroup: 33
+        seccompProfile:
+          type: RuntimeDefault
+      initContainers:
+        # The folders httpd serves and keeps its locks in, owned by its user (the host folder is
+        # created root-owned).
+        - name: folders
+          image: httpd:2.4.69@sha256:c842ac797bd1fe8b3cd26d002ac9d948aa2814097544600600b35aef42e6785a
+          command: [sh, -c, "mkdir -p /data/files/Projects /data/locks && chown 33:33 /data /data/files /data/files/Projects /data/locks"]
+          securityContext:
+            runAsUser: 0
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: [ALL]
+              add: [CHOWN]
+          volumeMounts:
+            - name: data
+              mountPath: /data
+      containers:
+        - name: httpd
+          image: httpd:2.4.69@sha256:c842ac797bd1fe8b3cd26d002ac9d948aa2814097544600600b35aef42e6785a
+          args: [httpd-foreground, -f, /config/httpd.conf]
+          ports:
+            - name: http
+              containerPort: 8080
+          readinessProbe:
+            tcpSocket:
+              port: http
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              memory: 256Mi
+          securityContext:
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: [ALL]
+          volumeMounts:
+            - name: data
+              mountPath: /data
+            - name: config
+              mountPath: /config
+            - name: users
+              mountPath: /secrets
+              readOnly: true
+            - name: tmp
+              mountPath: /tmp
+            - name: logs
+              mountPath: /usr/local/apache2/logs
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: drive-data
+        - name: config
+          configMap:
+            name: drive-httpd
+        - name: users
+          secret:
+            secretName: drive-users
+        - name: tmp
+          emptyDir: {}
+        - name: logs
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: drive
+spec:
+  selector:
+    app: drive
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http
+---
+# Private: https://files.lonk-kelvin.ts.net, tailnet only.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: files
+spec:
+  ingressClassName: tailscale
+  defaultBackend:
+    service:
+      name: drive
+      port:
+        name: http
+  tls:
+    - hosts:
+        - files

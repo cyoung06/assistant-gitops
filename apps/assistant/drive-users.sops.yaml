@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Secret
+metadata:
+    name: drive-users
+type: Opaque
+stringData:
+    users: ENC[AES256_GCM,data:XFSMHJDGB+qCsB1rCNPLwPf1/mKn7MCfvmMyEJmQKPKBMJvi65pW1aE3DbYX7XVDi+ISjgm3GUhO6AxLeD+8LH7n5SZw2A==,iv:++eBzPEb7KFXjOhQURuzwG+JKXk+8lje06OVUHETFS4=,tag:KRg608gxUxWwRYUR34yP/Q==,type:str]
+sops:
+    age:
+        - enc: |
+            -----BEGIN AGE ENCRYPTED FILE-----
+            YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBvbVU4OFg5eWhMVzV1YitB
+            ekgwMXMyRHkzWGNXOGQrTDhVQlFXS2ZWN0dzCk9zZGRTc0tuc1FFaG85WUs4ODVK
+            UzNwOU1nN2FHUU95emF4dnB4OWU3eDQKLS0tIDBwaWN1RmlFVUxYT2xjQ0djTnN3
+            QmlkK25URUpmckZRRE9FaGhMeHlUcXMK4D20GQE3gRYi6o+a2YUyXc/Pf0vFPqhD
+            Dqob992QZova/T0ATyD7CnAN2znoNrA+Nt+rKUVMMr7nLDyK+XxtPA==
+            -----END AGE ENCRYPTED FILE-----
+          recipient: age1a7kq5d0ellj6cd245cjzy6mcvhcv7z9fye3v8fzgjd5p37acyacskuc08s
+    encrypted_regex: ^(data|stringData)$
+    lastmodified: "2026-10-19T14:10:08Z"
+    mac: ENC[AES256_GCM,data:MNeva2EkYRJLAqgxRmWIgFriIEYFz8gTeoHonQOHN/xwxbgAmLhoTeTbMPHtotJ/pkBilg8x3WMhf6PEH05gOocJVT4KrgkNk4D7Wf+PGOLJFruJoYZWkk5IuUje3ad3EfNIFn3xCIARihzezZkpcUX5YfK2jqjiZPhv7ovs+IA=,iv:RFq/bQqoq71gswjN4Jx9doy6gPEn/9svhsFBYZy7bH0=,tag:1D72t0U6mnbIbcN/Bs+EeQ==,type:str]
+    version: 3.13.3

@@ -7,6 +7,8 @@ resources:
   - tunnel-secrets.sops.yaml
   - radicale-users.sops.yaml
   - radicale.yaml
+  - drive-users.sops.yaml
+  - drive.yaml
   - postgres.yaml
   - api.yaml
   - web.yaml
@@ -30,6 +32,10 @@ configMapGenerator:
       - MAIL_TENANT=postech.ac.kr
       # GitHub App for references to repos, issues and PRs (its private key is in api-secrets).
       - GITHUB_APP_ID=5378549
+      # The drive (WebDAV, apps/assistant/drive.yaml): in the cluster, and as devices reach it.
+      - DRIVE_URL=http://drive:8080
+      - DRIVE_USERNAME=syeyoung
+      - DRIVE_PUBLIC_URL=https://files.lonk-kelvin.ts.net
   - name: assistant-web
     literals:
       - API_UPSTREAM=http://assistant-api:8080
