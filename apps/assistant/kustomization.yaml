@@ -24,8 +24,6 @@ configMapGenerator:
       - DAV_URL=http://radicale:5232
       - DAV_USERNAME=syeyoung
       - PUBLIC_URL=https://assistant.lonk-kelvin.ts.net
-      # Through this host only /api/v1/public is answered (see apps/assistant-public).
-      - PUBLIC_HOST=assistant.syeyoung.dev
       # Outlook mail over IMAP signs in as Thunderbird (Mozilla's public client ID): POSTECH doesn't let users
       # consent to their own app registrations. Empty = mail source off.
       - MAIL_CLIENT_ID=9e5f94bc-e8a4-4e73-b8be-63364c29d753

@@ -20,11 +20,11 @@ spec:
               service:
                 name: assistant-web
                 port:
-                  number: 80
+                  name: public
           - path: /api/v1/public/
             pathType: Prefix
             backend:
               service:
                 name: assistant-web
                 port:
-                  number: 80
+                  name: public
