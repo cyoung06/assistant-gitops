@@ -43,6 +43,9 @@ spec:
                   find /ssd/drive /hdd/radicale -mindepth 1 -maxdepth 1 -type d -name '20??-??-??' -mtime +30 -exec rm -rf {} +
                   echo "backed up $day: $(du -sh "/hdd/db/assistant-$day.dump" | cut -f1) database, $(du -sh "/ssd/drive/$day" | cut -f1) drive"
               env:
+                # Folders and dumps named by the day here, not UTC's.
+                - name: TZ
+                  value: Asia/Seoul
                 - name: DB_PASSWORD
                   valueFrom:
                     secretKeyRef:
