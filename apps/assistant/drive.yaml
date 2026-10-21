@@ -182,6 +182,9 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: files
+  annotations:
+    # Served by the ProxyGroup with static endpoints (tailscale.yaml): direct, not relayed.
+    tailscale.com/proxy-group: assistant
 spec:
   ingressClassName: tailscale
   defaultBackend:
