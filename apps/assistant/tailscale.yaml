@@ -10,7 +10,8 @@ spec:
   staticEndpoints:
     nodePort:
       ports:
-        - "31700-31702"
+        - port: 31700
+          endPort: 31702
       selector:
         kubernetes.io/os: linux
 ---
