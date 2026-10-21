@@ -1,0 +1,24 @@
+# The assistant's tailnet entry: a ProxyGroup whose proxies have a static endpoint (the node's public
+# IP and a NodePort, forwarded by the router: UDP 31700-31702), so devices connect to them directly.
+# A proxy in the cluster is behind k3s's NAT, which Tailscale can't traverse: without this, everything
+# went through a DERP relay (~0.7-2.5 MB/s).
+apiVersion: tailscale.com/v1alpha1
+kind: ProxyClass
+metadata:
+  name: direct
+spec:
+  staticEndpoints:
+    nodePort:
+      ports:
+        - "31700-31702"
+      selector:
+        kubernetes.io/os: linux
+---
+apiVersion: tailscale.com/v1alpha1
+kind: ProxyGroup
+metadata:
+  name: assistant
+spec:
+  type: ingress
+  proxyClass: direct
+  replicas: 1

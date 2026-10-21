@@ -13,6 +13,7 @@ resources:
   - api.yaml
   - web.yaml
   - tunnel.yaml
+  - tailscale.yaml
   - ingress.yaml
 configMapGenerator:
   - name: assistant-api
