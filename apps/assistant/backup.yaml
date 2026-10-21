@@ -1,15 +1,17 @@
-# Nightly backups, each kept 30 days, each on the other disk from what it copies (so one disk failing
-# loses nothing):
+# Backups against our own code going wrong (a bug wrecking notes or notebooks): a snapshot every hour,
+# kept for 2 days, and the 4 o'clock one of each day kept for 30, so there's a point just before any
+# damage to go back to. Each on the other disk from what it copies:
 #   - the database (on the node's SSD)        → pg_dump into /mnt/hdd/backups/assistant/db (HDD)
 #   - the drive's files (on the HDD)           → a full copy into /var/lib/assistant-backups/drive (SSD)
 #   - the calendar's data (Radicale, on the SSD) → a copy into /mnt/hdd/backups/assistant/radicale (HDD)
-# Restore: pg_restore --clean -d assistant <dump>; copy a dated folder back into place.
+# Restore: pg_restore --clean -d assistant <dump>; copy a dated folder back into place. (Named
+# YYYY-MM-DD-HH, Seoul time.)
 apiVersion: batch/v1
 kind: CronJob
 metadata:
   name: backup
 spec:
-  schedule: "0 4 * * *"
+  schedule: "0 * * * *"
   timeZone: Asia/Seoul
   concurrencyPolicy: Forbid
   successfulJobsHistoryLimit: 3
@@ -26,7 +28,7 @@ spec:
               command: [sh, -euc]
               args:
                 - |
-                  day=$(date +%F)
+                  day=$(date +%F-%H)
                   mkdir -p /hdd/db /hdd/radicale /ssd/drive
 
                   # The database, as one restorable file; written aside, then put in place.
@@ -38,9 +40,11 @@ spec:
                   cp -a /drive "/ssd/drive/$day.part" && rm -rf "/ssd/drive/$day" && mv "/ssd/drive/$day.part" "/ssd/drive/$day"
                   cp -a /radicale "/hdd/radicale/$day.part" && rm -rf "/hdd/radicale/$day" && mv "/hdd/radicale/$day.part" "/hdd/radicale/$day"
 
-                  # Older than 30 days: let go.
-                  find /hdd/db -maxdepth 1 -name 'assistant-*.dump' -mtime +30 -delete
-                  find /ssd/drive /hdd/radicale -mindepth 1 -maxdepth 1 -type d -name '20??-??-??' -mtime +30 -exec rm -rf {} +
+                  # Hourly ones older than 2 days let go, except each day's 04; those after 30 days.
+                  find /hdd/db -maxdepth 1 -name 'assistant-20*.dump' ! -name '*-04.dump' -mmin +2880 -delete
+                  find /hdd/db -maxdepth 1 -name 'assistant-20*.dump' -mtime +30 -delete
+                  find /ssd/drive /hdd/radicale -mindepth 1 -maxdepth 1 -type d -name '20??-??-??-??' ! -name '*-04' -mmin +2880 -exec rm -rf {} +
+                  find /ssd/drive /hdd/radicale -mindepth 1 -maxdepth 1 -type d -name '20??-??-??-??' -mtime +30 -exec rm -rf {} +
                   echo "backed up $day: $(du -sh "/hdd/db/assistant-$day.dump" | cut -f1) database, $(du -sh "/ssd/drive/$day" | cut -f1) drive"
               env:
                 # Folders and dumps named by the day here, not UTC's.
