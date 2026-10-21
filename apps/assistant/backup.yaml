@@ -1,0 +1,84 @@
+# Nightly backups, each kept 30 days, each on the other disk from what it copies (so one disk failing
+# loses nothing):
+#   - the database (on the node's SSD)        → pg_dump into /mnt/hdd/backups/assistant/db (HDD)
+#   - the drive's files (on the HDD)           → a full copy into /var/lib/assistant-backups/drive (SSD)
+#   - the calendar's data (Radicale, on the SSD) → a copy into /mnt/hdd/backups/assistant/radicale (HDD)
+# Restore: pg_restore --clean -d assistant <dump>; copy a dated folder back into place.
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: backup
+spec:
+  schedule: "0 4 * * *"
+  timeZone: Asia/Seoul
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: backup
+              image: postgres:16.13-bookworm@sha256:472efd9a66f2b2f1a5aeb18b28de74332e6ef88c2b93a1a5d812fb6db67a5f60
+              command: [sh, -euc]
+              args:
+                - |
+                  day=$(date +%F)
+                  mkdir -p /hdd/db /hdd/radicale /ssd/drive
+
+                  # The database, as one restorable file; written aside, then put in place.
+                  PGPASSWORD="$DB_PASSWORD" pg_dump -h postgres -U assistant -d assistant -Fc -f "/hdd/db/assistant-$day.dump.part"
+                  mv "/hdd/db/assistant-$day.dump.part" "/hdd/db/assistant-$day.dump"
+
+                  # The drive and the calendar, as they are tonight.
+                  rm -rf "/ssd/drive/$day.part" "/hdd/radicale/$day.part"
+                  cp -a /drive "/ssd/drive/$day.part" && rm -rf "/ssd/drive/$day" && mv "/ssd/drive/$day.part" "/ssd/drive/$day"
+                  cp -a /radicale "/hdd/radicale/$day.part" && rm -rf "/hdd/radicale/$day" && mv "/hdd/radicale/$day.part" "/hdd/radicale/$day"
+
+                  # Older than 30 days: let go.
+                  find /hdd/db -maxdepth 1 -name 'assistant-*.dump' -mtime +30 -delete
+                  find /ssd/drive /hdd/radicale -mindepth 1 -maxdepth 1 -type d -name '20??-??-??' -mtime +30 -exec rm -rf {} +
+                  echo "backed up $day: $(du -sh "/hdd/db/assistant-$day.dump" | cut -f1) database, $(du -sh "/ssd/drive/$day" | cut -f1) drive"
+              env:
+                - name: DB_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: assistant-api
+                      key: DB_PASSWORD
+              resources:
+                requests:
+                  cpu: 20m
+                  memory: 64Mi
+                limits:
+                  memory: 512Mi
+              volumeMounts:
+                - name: drive
+                  mountPath: /drive
+                  readOnly: true
+                - name: radicale
+                  mountPath: /radicale
+                  readOnly: true
+                - name: hdd
+                  mountPath: /hdd
+                - name: ssd
+                  mountPath: /ssd
+          volumes:
+            - name: drive
+              persistentVolumeClaim:
+                claimName: drive-data
+                readOnly: true
+            - name: radicale
+              persistentVolumeClaim:
+                claimName: radicale-data
+                readOnly: true
+            - name: hdd
+              hostPath:
+                path: /mnt/hdd/backups/assistant
+                type: DirectoryOrCreate
+            - name: ssd
+              hostPath:
+                path: /var/lib/assistant-backups
+                type: DirectoryOrCreate

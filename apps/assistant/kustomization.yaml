@@ -15,6 +15,7 @@ resources:
   - tunnel.yaml
   - tailscale.yaml
   - ingress.yaml
+  - backup.yaml
 configMapGenerator:
   - name: assistant-api
     literals:
