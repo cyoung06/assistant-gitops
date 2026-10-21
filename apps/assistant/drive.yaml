@@ -185,6 +185,8 @@ metadata:
   annotations:
     # Served by the ProxyGroup with static endpoints (tailscale.yaml): direct, not relayed.
     tailscale.com/proxy-group: assistant
+    # Port 80 only redirects to HTTPS; it also lets the service be advertised before its certificate exists.
+    tailscale.com/http-redirect: "true"
 spec:
   ingressClassName: tailscale
   defaultBackend:
