@@ -10,7 +10,6 @@ resources:
   - drive-users.sops.yaml
   - drive.yaml
   - postgres.yaml
-  - gotenberg.yaml
   - api.yaml
   - web.yaml
   - tunnel.yaml
@@ -37,8 +36,6 @@ configMapGenerator:
       - DRIVE_URL=http://drive:8080
       - DRIVE_USERNAME=syeyoung
       - DRIVE_PUBLIC_URL=https://files.lonk-kelvin.ts.net
-      # HTML to PDF, for exports (apps/assistant/gotenberg.yaml).
-      - GOTENBERG_URL=http://gotenberg:3000
   - name: assistant-web
     literals:
       - API_UPSTREAM=http://assistant-api:8080
