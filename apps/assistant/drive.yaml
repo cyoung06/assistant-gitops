@@ -62,10 +62,10 @@ data:
     # Big uploads (lecture videos, scans) are fine.
     LimitRequestBody 0
     DavLockDB /data/locks/DavLock
-    # Clients that mishandle redirects on folders without a trailing slash (old Finder, Windows).
-    BrowserMatch "Microsoft Data Access Internet Publishing Provider" redirect-carefully
-    BrowserMatch "^WebDAVFS/1.[01234]" redirect-carefully
-    BrowserMatch "^gnome-vfs/1.0" redirect-carefully
+    # A folder asked for without its trailing slash: answered as it is for WebDAV (redirect-carefully
+    # keeps mod_dir's redirect to GETs). Clients that follow that redirect without their login
+    # (Noteshelf's backup, old Finder, Windows) otherwise can't list folders at all.
+    SetEnvIf Request_Method "." redirect-carefully
     # A folder is always a folder: an index.html in it (a course page from PLMS) isn't served in its place.
     DirectoryIndex disabled
     DocumentRoot /data/files
